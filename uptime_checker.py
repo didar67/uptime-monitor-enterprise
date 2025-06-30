@@ -18,11 +18,13 @@ from requests.exceptions import ConnectionError, RequestException, Timeout
 from smtplib import SMTP, SMTPException
 from email.message import EmailMessage
 
+# Twilio imports for SMS notification
 try:
     from twilio.rest import Client as TwilioClient
 except ImportError:
     TwilioClient = None
 
+# Logging Setup
 def initialize_logger(log_file_path: str, max_file_size: int, backup_count: int) -> logging.Logger:
     logger = logging.getLogger('EnterpriseUptimeMonitor')
     logger.setLevel(logging.DEBUG)
@@ -42,6 +44,7 @@ def initialize_logger(log_file_path: str, max_file_size: int, backup_count: int)
 
     return logger
 
+# Config Loading
 def load_config(path: str) -> dict:
     if not os.path.isfile(path):
         raise FileNotFoundError(f"Configuration file not found: {path}")
@@ -53,20 +56,23 @@ class NotificationManager:
         self.logger = logger
         self.email_enabled = config.get("enable_email", False)
         self.sms_enabled = config.get("enable_sms", False)
-
+        
+        # Email Config
         email_cfg = config.get("email", {})
         self.smtp_server = email_cfg.get("smtp_server", "")
         self.smtp_port = email_cfg.get("smtp_port", 587)
         self.sender_email = email_cfg.get("sender_email")
         self.sender_password = email_cfg.get("sender_password")
         self.recipient_emails = email_cfg.get("recipient_emails", [])
-
+        
+        # SMS Config
         sms_cfg = config.get("sms", {})
         self.twilio_sid = sms_cfg.get("account_sid")
         self.twilio_token = sms_cfg.get("auth_token")
         self.from_phone = sms_cfg.get("from_phone")
         self.twilio_to_phones = sms_cfg.get("to_phones", [])
 
+        # Initialize Twilio client if SMS enabled
         if self.sms_enabled and TwilioClient:
             self.twilio_client = TwilioClient(self.twilio_sid, self.twilio_token)
         else:
@@ -117,6 +123,7 @@ class NotificationManager:
             except Exception as e:
                 self.logger.error(f"Failed to send SMS to {to_phone}: {e}")
 
+# Website Check Logic
 def is_website_response(
     url: str,
     timeout: int,
@@ -164,6 +171,7 @@ def is_website_response(
     logger.error(f"❌ {url} is DOWN after {retries} attempts")
     return False
 
+# CLI Argument Parsing
 def parse_cli_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Enterprise Website Uptime Monitor with Notifications")
     group = parser.add_mutually_exclusive_group(required=True)
@@ -172,6 +180,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--dry_run", action="store_true", help="Simulate checks without making real HTTP requests")
     return parser.parse_args()
 
+# Main Execution
 def main() -> None:
     try:
         args = parse_cli_arguments()
