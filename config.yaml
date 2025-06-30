@@ -1,0 +1,43 @@
+# Config YAML
+urls:
+    - url: https://www.goggle.com
+      headers:
+      User-Agent: "MyCustomAgent/1.0"
+      auth: null # {username= "user", "password"= "pass"} or null
+
+    - url: https://github.com
+      headers: {}
+      auth: null
+
+    - url: https://private-site.example.com
+      headers: 
+        Authorization: "Bearer eyjHkjnv..."
+      auth: null
+
+timeout_seconds: 7
+max_retries: 5
+max_workers: 5
+
+log_file: logs/uptime_checker.log
+log_max_bytes: 2097152  # 2 MB
+log_backup_count: 5
+
+notification:
+  enable_email: True
+  email:
+    smtp_server: smtp.example.com
+    smtp_port: 587
+    sender_email: sender@example.com
+    sender_password: your_password
+    recipient_emails:
+      - admin1@example.com
+      - admin2@example.com
+
+  enable_sms: True
+  sms:
+    account_sid: YOUR_TWILIO_SID
+    auth_token: YOUR_TWILIO_AUTH_TOKEN
+    from_phone: "+1234567890"
+    to_phones: 
+      - "+8801XXXXXXXXX"
+      - "+8801YYYYYYYYY"
